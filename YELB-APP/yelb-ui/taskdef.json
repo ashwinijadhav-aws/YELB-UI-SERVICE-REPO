@@ -1,0 +1,89 @@
+{
+    "taskDefinitionArn": "<TASK_DEFINITION>",
+    "containerDefinitions": [
+        {
+            "name": "yelb-ui",
+            "image": "<IMAGE1_NAME>",
+            "cpu": 256,
+            "memory": 2048,
+            "portMappings": [
+                {
+                    "name": "app_ui_port_mapping",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "RACK_ENV",
+                    "value": "custom"
+                },
+                {
+                    "name": "YELB_DB_SERVER_ENDPOINT",
+                    "value": "yelb-db.yelb-dns-namespace-bg"
+                },
+                {
+                    "name": "YELB_APPSERVER_ENDPOINT",
+                    "value": "http://yelb-appserver.yelb-dns-namespace-bg:4567"
+                },
+                {
+                    "name": "REDIS_SERVER_ENDPOINT",
+                    "value": "redis-server.yelb-dns-namespace-bg"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/yelb-bg",
+                    "awslogs-region": "ap-south-1",
+                    "awslogs-stream-prefix": "yelb-ui"
+                }
+            }
+        }
+    ],
+    "family": "yelb-ui-app-task-bg",
+    "executionRoleArn": "arn:aws:iam::489607165512:role/myEcsTaskExecutionRoleBG",
+    "networkMode": "awsvpc",
+    "revision": 20,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048",
+    "registeredAt": "2023-10-04T10:54:19.043Z",
+    "registeredBy": "arn:aws:sts::489607165512:assumed-role/BlueGreenDemo_codepipeline_role/1696416858705",
+}

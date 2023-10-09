@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+  variables:
+    SDLC_ENVIRONMENT: "$1"
+    ECR_REPO_NAME: "$2"
+
+    # GIT_REPO: "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/dockerecrtestbuild"
+phases:
+  install:
+    commands:
+    - apt-get update -y && apt-get install -y git
+  pre_build:
+    commands:
+    - echo "This is Codecommit Repo URL - $CODEBUILD_SOURCE_REPO_URL"
+    - |
+      BRANCH_NAME=$(echo "$CODEBUILD_SOURCE_VERSION" | awk -F "/" '{print $NF}')
+      echo "SDLC_ENV is : $SDLC_ENVIRONMENT"
+      echo "BRANCH_NAME is : $BRANCH_NAME"
+      echo "CODEBUILD_SOURCE_REPO_URL is : $CODEBUILD_SOURCE_REPO_URL"
+      echo "CODEBUILD_SOURCE_VERSION is : $CODEBUILD_SOURCE_VERSION"
+      echo "CODEBUILD_RESOLVED_SOURCE_VERSION  is : $CODEBUILD_RESOLVED_SOURCE_VERSION "
+      echo "REPO_NAME is : $ECR_REPO_NAME"
+    - REPOSITORY_URI="489607165512.dkr.ecr.ap-south-1.amazonaws.com/yelb_ui_repository"
+    - echo "CODEBUILD_RESOLVED_SOURCE_VERSION-$CODEBUILD_RESOLVED_SOURCE_VERSION"
+    
+  build:
+    commands:
+    - echo "inside build commands and printing all environment variables below"
+    - printenv
+    - echo `pwd`
+    - echo "This is the commit id from Source Control - $CODEBUILD_RESOLVED_SOURCE_VERSION"
+    - echo "This is Codecommit Repo Name - $ECR_REPO_NAME"
+    - echo "This is the CODEBUILD_SRC_DIR - $CODEBUILD_SRC_DIR"
+    - echo "This is the COMMIT_HASH - $COMMIT_HASH"
+    - bash $CODEBUILD_SRC_DIR/YELB-APP/yelb-ui/build_and_push.sh $SDLC_ENVIRONMENT $ECR_REPO_NAME
+    - printf '[{"name":"yelb-ui","imageUri":"%s"}]' $REPOSITORY_URI:$CODEBUILD_BUILD_NUMBER  > imagedefinitions.json
+  
+artifacts:
+    files: 
+    - imagedefinitions.json
