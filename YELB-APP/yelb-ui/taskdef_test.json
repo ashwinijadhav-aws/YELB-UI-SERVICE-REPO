@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "<TASK_DEFINITION>",
+    "taskDefinitionArn": "<TASK_DEFINITION>", 
     "containerDefinitions": [
         {
             "name": "yelb-ui",
