@@ -44,11 +44,7 @@ phases:
     - bash $CODEBUILD_SRC_DIR/YELB-APP/yelb-ui/build_and_push.sh $SDLC_ENVIRONMENT $ECR_REPO_NAME
     - printf '[{"name":"yelb-ui","imageUri":"%s"}]' $REPOSITORY_URI:$CODEBUILD_BUILD_NUMBER  > imagedefinitions.json
     - echo "Running SonarQube analysis..."
-    - sonar-scanner \
-        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-        -Dsonar.sources=$CODEBUILD_SRC_DIR \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.login=$SONAR_LOGIN
+    - sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=$CODEBUILD_SRC_DIR -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_LOGIN
 
 artifacts:
   files:
