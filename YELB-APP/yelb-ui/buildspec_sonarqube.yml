@@ -1,0 +1,55 @@
+version: 0.2
+
+env:
+  variables:
+    SDLC_ENVIRONMENT: "$1"
+    ECR_REPO_NAME: "$2"
+    SONAR_HOST_URL: "http://3.111.214.161:9000/"
+    SONAR_PROJECT_KEY: "CLOUDOMSCICD"
+    #11eb25f52c5590fc19e762e414fbe4718168b481
+    SONAR_LOGIN: "11eb25f52c5590fc19e762e414fbe4718168b481"
+
+# GIT_REPO: "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/dockerecrtestbuild"
+phases:
+  install:
+    commands:
+    - apt-get update -y && apt-get install -y git
+    - apt-get install -y openjdk-11-jdk
+    - curl -Lo /opt/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+    - unzip /opt/sonar-scanner.zip -d /opt
+    - export PATH=$PATH:/opt/sonar-scanner-4.6.2.2472-linux/bin
+  pre_build:
+    commands:
+    - echo "This is Codecommit Repo URL - $CODEBUILD_SOURCE_REPO_URL"
+    - |
+      BRANCH_NAME=$(echo "$CODEBUILD_SOURCE_VERSION" | awk -F "/" '{print $NF}')
+      echo "SDLC_ENV is : $SDLC_ENVIRONMENT"
+      echo "BRANCH_NAME is : $BRANCH_NAME"
+      echo "CODEBUILD_SOURCE_REPO_URL is : $CODEBUILD_SOURCE_REPO_URL"
+      echo "CODEBUILD_SOURCE_VERSION is : $CODEBUILD_SOURCE_VERSION"
+      echo "CODEBUILD_RESOLVED_SOURCE_VERSION  is : $CODEBUILD_RESOLVED_SOURCE_VERSION "
+      echo "REPO_NAME is : $ECR_REPO_NAME"
+    - REPOSITORY_URI="489607165512.dkr.ecr.ap-south-1.amazonaws.com/yelb_ui_repository"
+    - echo "CODEBUILD_RESOLVED_SOURCE_VERSION-$CODEBUILD_RESOLVED_SOURCE_VERSION"
+
+  build:
+    commands:
+    - echo "inside build commands and printing all environment variables below"
+    - printenv
+    - echo `pwd`
+    - echo "This is the commit id from Source Control - $CODEBUILD_RESOLVED_SOURCE_VERSION"
+    - echo "This is Codecommit Repo Name - $ECR_REPO_NAME"
+    - echo "This is the CODEBUILD_SRC_DIR - $CODEBUILD_SRC_DIR"
+    - echo "This is the COMMIT_HASH - $COMMIT_HASH"
+    - bash $CODEBUILD_SRC_DIR/YELB-APP/yelb-ui/build_and_push.sh $SDLC_ENVIRONMENT $ECR_REPO_NAME
+    - printf '[{"name":"yelb-ui","imageUri":"%s"}]' $REPOSITORY_URI:$CODEBUILD_BUILD_NUMBER  > imagedefinitions.json
+    - echo "Running SonarQube analysis..."
+    - sonar-scanner \
+        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+        -Dsonar.sources=$CODEBUILD_SRC_DIR \
+        -Dsonar.host.url=$SONAR_HOST_URL \
+        -Dsonar.login=$SONAR_LOGIN
+
+artifacts:
+  files:
+  - imagedefinitions.json
