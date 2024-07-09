@@ -7,7 +7,7 @@ env:
     SONAR_HOST_URL: "http://13.233.149.42:9000/"
     SONAR_PROJECT_KEY: "CLOUDOMSCICD"
     #11eb25f52c5590fc19e762e414fbe4718168b481
-    SONAR_LOGIN: "11eb25f52c5590fc19e762e414fbe4718168b481"
+    SONAR_LOGIN: "fbf8ed8c08365bbce4f0e23f1ab7e4ec535ab00e"
 
 # GIT_REPO: "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/dockerecrtestbuild"
 phases:
