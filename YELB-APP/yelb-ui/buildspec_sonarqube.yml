@@ -4,7 +4,7 @@ version: 0.2
 
 env:
   variables:
-    SONAR_HOST_URL: "http://13.200.253.137/:9000/"
+    SONAR_HOST_URL: "http://13.200.253.137:9000/"
     SONAR_PROJECT_KEY: "CLOUDOMSCICD"
     SONAR_LOGIN: "87b993eaf7c2115c5b8f048bd6f4da144476011c"
 
