@@ -28,7 +28,7 @@ phases:
       echo "CODEBUILD_SOURCE_VERSION is : $CODEBUILD_SOURCE_VERSION"
       echo "CODEBUILD_RESOLVED_SOURCE_VERSION  is : $CODEBUILD_RESOLVED_SOURCE_VERSION "
       echo "REPO_NAME is : $ECR_REPO_NAME"
-    - REPOSITORY_URI="489607165512.dkr.ecr.ap-south-1.amazonaws.com/yelb_ui_repository"
+    - REPOSITORY_URI="339712726574.dkr.ecr.ap-south-1.amazonaws.com/yelb_ui_repository"
     - echo "CODEBUILD_RESOLVED_SOURCE_VERSION-$CODEBUILD_RESOLVED_SOURCE_VERSION"
 
   build:
