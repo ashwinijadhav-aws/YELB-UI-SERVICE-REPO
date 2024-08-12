@@ -1,0 +1,31 @@
+#refer folder for C:\CLIENT\CLOUDOMS\ECS\CODEPIPELINE-ECS-DEPLOYMENT\YELB-GIT-CODECOMMIT-REPO\GITHUB-REPO
+
+version: 0.2
+
+env:
+  variables:
+    SONAR_HOST_URL: "$1"
+    SONAR_PROJECT_KEY: "$2"
+    #11eb25f52c5590fc19e762e414fbe4718168b481
+    SONAR_LOGIN: "$3"
+
+# GIT_REPO: "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/dockerecrtestbuild"
+phases:
+  install:
+    commands:
+    - apt-get update -y && apt-get install -y git
+    - apt-get install -y openjdk-11-jdk
+    - curl -Lo /opt/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+    - unzip /opt/sonar-scanner.zip -d /opt
+    - export PATH=$PATH:/opt/sonar-scanner-4.6.2.2472-linux/bin
+  pre_build:
+    commands:
+    - echo "This is Codecommit Repo URL - $CODEBUILD_SOURCE_REPO_URL"
+
+  build:
+    commands:
+    - echo "inside build commands and printing all environment variables below"
+    - printenv
+    - echo `pwd`
+    - echo "Running SonarQube analysis..."
+    - sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=$CODEBUILD_SRC_DIR -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_LOGIN

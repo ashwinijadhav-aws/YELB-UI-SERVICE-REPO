@@ -1,0 +1,63 @@
+version: 0.2
+
+env:
+  variables:
+    SDLC_ENVIRONMENT: "$1"
+    ECR_REPO_NAME: "$2"
+    REPOSITORY_URI: "489607165512.dkr.ecr.ap-south-1.amazonaws.com/yelb_ui_repository"
+    S3_BUCKET_NAME: "your-s3-bucket-name"  # Replace with your actual S3 bucket name
+    SNS_TOPIC_ARN: "arn:aws:sns:your-region:your-account-id:your-topic"  # Replace with your SNS topic ARN
+
+phases:
+  install:
+    commands:
+    - apt-get update -y && apt-get install -y git
+    - apt-get install -y openjdk-11-jdk
+    - echo Installing Trivy...
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+    
+  pre_build:
+    commands:
+    - echo "This is Codecommit Repo URL - $CODEBUILD_SOURCE_REPO_URL"
+    - echo "Preparing to build and push Docker image"
+    - echo "Environment: $SDLC_ENVIRONMENT"
+    - echo "Repository Name: $ECR_REPO_NAME"
+    - echo "S3_BUCKET_NAME: $S3_BUCKET_NAME"
+    - echo "S3_BUCKET_NAME: $SNS_TOPIC_ARN"   
+    - |
+      BRANCH_NAME=$(echo "$CODEBUILD_SOURCE_VERSION" | awk -F "/" '{print $NF}')
+      echo "BRANCH_NAME is : $BRANCH_NAME"
+      echo "CODEBUILD_SOURCE_VERSION is : $CODEBUILD_SOURCE_VERSION"
+      echo "CODEBUILD_RESOLVED_SOURCE_VERSION  is : $CODEBUILD_RESOLVED_SOURCE_VERSION "
+      echo "CODEBUILD_RESOLVED_SOURCE_VERSION-$CODEBUILD_RESOLVED_SOURCE_VERSION"
+
+  build:
+    commands:
+    - echo "inside build phase and printing all environment variables below"
+    - printenv
+    - echo `pwd`
+    - echo "Running build_and_scan_image.sh script"
+    - bash $CODEBUILD_SRC_DIR/YELB-APP/yelb-ui/build_and_scan_image.sh $SDLC_ENVIRONMENT $ECR_REPO_NAME
+
+  post_build:
+    commands:
+      - echo "Scanning the Docker image with Trivy..."
+      - trivy image ${ECR_REPO_NAME} --severity HIGH,CRITICAL --format json --output trivy_report.json
+      - echo "Checking for HIGH and CRITICAL vulnerabilities..."
+      - if grep -q '"VulnerabilityID"' trivy_report.json; then 
+            echo "Critical or High vulnerabilities found! Saving report and notifying.";
+            # Upload the report to S3
+            aws s3 cp trivy_report.json s3://$S3_BUCKET_NAME/reports/$(date +%Y-%m-%d-%H-%M-%S)_trivy_report.json
+            # Send an SNS notification
+            aws sns publish --topic-arn $SNS_TOPIC_ARN --subject "Trivy Scan Alert: High/Critical Vulnerabilities Found" --message "High or Critical vulnerabilities were found during the Trivy scan. Please check the report in the S3 bucket: s3://$S3_BUCKET_NAME/reports/$(date +%Y-%m-%d-%H-%M-%S)_trivy_report.json"
+            exit 1; 
+        else 
+            echo "No Critical or High vulnerabilities found."; 
+            # Optionally upload a clean scan report as well
+            aws s3 cp trivy_report.json s3://$S3_BUCKET_NAME/reports/$(date +%Y-%m-%d-%H-%M-%S)_trivy_clean_report.json
+        fi
+
+artifacts:
+  files:
+    - trivy_report.json
+  discard-paths: yes
